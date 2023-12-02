@@ -16,10 +16,18 @@
         <StackPanel Orientation="Vertical" >
             <Button Content="Load Data" DockPanel.Dock="Top"  Click="LoadCsvButton_Click" Width="200" Height="50" HorizontalAlignment="Left" Margin="5,5,5,5" />
             <Label Content="Search Stock" />
-            <TextBox x:Name="Search_Stcok" Margin="5,5,5,5" DockPanel.Dock="Top" Height="25" TextChanged="Search_Stcok_TextChanged" ToolTip="Comma seperated stock names" />
+            <TextBox x:Name="Search_Stcok" Margin="5,5,5,5" DockPanel.Dock="Top" Height="25" TextChanged="Search_Stock_TextChanged" ToolTip="Comma seperated stock names" />
 
             <Label Content="Holding Period" />
-            <TextBox x:Name="Holding_Period" Margin="5,5,5,5" DockPanel.Dock="Top" Height="25" TextChanged="Holding_Period_TextChanged" ToolTip="Holding Period in days" />
+            <TextBox x:Name="Holding_Period" Margin="5,5,5,5" DockPanel.Dock="Top" Height="25" TextChanged="Holding_Period_TextChanged" ToolTip="Holding Period in days"
+                     PreviewTextInput="Holding_Period_PreviewTextInput" />
+            <Label Content="Stock Action" Margin="0,2,0,0"/>
+            <ComboBox Name="Action" DockPanel.Dock="Top" Height="25" Margin="5,5,5,5"  SelectionChanged="Action_SelectionChanged">
+                <ComboBoxItem Content="Can Sell" />
+                <ComboBoxItem Content="Cannot Sell" />
+                <ComboBoxItem Content="Sold" />
+                <ComboBoxItem Content="Reset" />
+            </ComboBox>
 
         </StackPanel>
             <!--Unbound DataGrid just to display the headers-->

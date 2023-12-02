@@ -16,6 +16,8 @@ namespace TradeViewer
         public static readonly string SOLD = "Sold";
         public static readonly string CAN_SELL = "Can Sell";
         public static readonly string CANNOT_SELL = "Cannot Sell";
+        public static readonly string STOCK_ACTION_RESET = "Reset";
+        
     }
 
     public class TradeData
@@ -37,6 +39,7 @@ namespace TradeViewer
         private static readonly SolidColorBrush RED = new SolidColorBrush(Colors.Red);
         public static readonly int HOLDING_PERIOD = 60;
         private int _holding_Period = 0;
+        private SolidColorBrush _actionColor = RED;
 
         public string StockName { get; set; }
         public int HeldFor
@@ -61,14 +64,25 @@ namespace TradeViewer
         {
             get
             {
-                if (CanSellDescr.Equals(TradeViewerConstants.SOLD) )
-                {
-                    return RED;
-                }
-
-                return HeldFor >= HoldingPeriod ? GREEN : RED;
+                return _actionColor;
+            }
+            set
+            {
+                _actionColor = GetActionColor();                
             }
         }
+
+        public SolidColorBrush GetActionColor()
+        {
+            if (CanSellDescr.Equals(TradeViewerConstants.SOLD))
+            {
+                return RED;
+            }
+
+            return HeldFor >= HoldingPeriod ? GREEN : RED;
+
+        }
+
 
         public String CanSellDescr
         {
@@ -112,6 +126,7 @@ namespace TradeViewer
 
         public ObservableCollection<StockToTradeGroup> LoadCsvData(string csvFilePath, int holding_period )
         {
+            records.Clear();
             using (var reader = new StreamReader(csvFilePath))
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
@@ -122,39 +137,45 @@ namespace TradeViewer
 
                 foreach (var data in groupData)
                 {
-
-                    List<EnrichedTradeData> enrichedTradeDatas = new List<EnrichedTradeData>();
-
-                    EnrichedTradeData? temp = null;
-
-                    foreach (var trade in data.Trades)
-                    {
-                        if ( temp != null && temp.HeldFor == null )
-                        {
-                            var tempDate = DateTimeOffset.ParseExact(temp.Date, "dd-MMM-yyyy", CultureInfo.InvariantCulture);
-                            var tradeDate = DateTimeOffset.ParseExact(trade.Date, "dd-MMM-yyyy", CultureInfo.InvariantCulture);
-                            temp.HeldFor = tempDate.Subtract(tradeDate).Days.ToString();
-                        }
-                        var enrichedTrade = new EnrichedTradeData { Stock = trade.Stock, Action = trade.Action, Date = trade.Date };
-                        enrichedTradeDatas.Add( enrichedTrade);
-                        if ( trade.Action.Equals(TradeViewerConstants.Sell))
-                        {
-                            temp = enrichedTrade;
-                        }
-                    }
-                    int heldForDays = StockToTradeGroup.calculateHeldFor(enrichedTradeDatas);
-                    holding_period = holding_period != 0 ? holding_period : StockToTradeGroup.HOLDING_PERIOD;
-                    var stockToTradeGroup = new StockToTradeGroup()
-                    { StockName = data.StockName,
-                        Trades = enrichedTradeDatas,
-                        HeldFor = heldForDays,
-                        CanSellDescr = StockToTradeGroup.calculateCanSell(enrichedTradeDatas, heldForDays, holding_period),
-                        HoldingPeriod = holding_period
-                    };
+                    StockToTradeGroup stockToTradeGroup = EnrichStackToTradeGroup(ref holding_period, data.StockName, data.Trades);
                     records.Add(stockToTradeGroup);
                 }
             }
             return records;
+        }
+
+        private static StockToTradeGroup EnrichStackToTradeGroup(ref int holding_period, String stockName, List<TradeData> trades)
+        {
+            List<EnrichedTradeData> enrichedTradeDatas = new List<EnrichedTradeData>();
+
+            EnrichedTradeData? temp = null;
+
+            foreach (var trade in trades)
+            {
+                if (temp != null && temp.HeldFor == null)
+                {
+                    var tempDate = DateTimeOffset.ParseExact(temp.Date, "dd-MMM-yyyy", CultureInfo.InvariantCulture);
+                    var tradeDate = DateTimeOffset.ParseExact(trade.Date, "dd-MMM-yyyy", CultureInfo.InvariantCulture);
+                    temp.HeldFor = tempDate.Subtract(tradeDate).Days.ToString();
+                }
+                var enrichedTrade = new EnrichedTradeData { Stock = trade.Stock, Action = trade.Action, Date = trade.Date };
+                enrichedTradeDatas.Add(enrichedTrade);
+                if (trade.Action.Equals(TradeViewerConstants.Sell))
+                {
+                    temp = enrichedTrade;
+                }
+            }
+            int heldForDays = StockToTradeGroup.calculateHeldFor(enrichedTradeDatas);
+            holding_period = holding_period != 0 ? holding_period : StockToTradeGroup.HOLDING_PERIOD;
+            var stockToTradeGroup = new StockToTradeGroup()
+            {
+                StockName = stockName,
+                Trades = enrichedTradeDatas,
+                HeldFor = heldForDays,
+                CanSellDescr = StockToTradeGroup.calculateCanSell(enrichedTradeDatas, heldForDays, holding_period),
+                HoldingPeriod = holding_period
+            };
+            return stockToTradeGroup;
         }
 
         private List<TradeData> EnrichTrades(IGrouping<string, TradeData> stockGroup)

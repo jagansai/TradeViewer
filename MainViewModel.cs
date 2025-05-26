@@ -20,12 +20,22 @@ namespace TradeViewer
         
     }
 
-    public class TradeData
-    {        
-        public string Date { get; set; }
 
-        public string Stock { get; set; }
-        public string Action { get; set; }
+    // This class should have fields that should be mapped to csv file with below mappings.
+    // "Transaction Date" => Date
+    // "Stock Symbol" => Stock
+    // Action => Action.
+
+    public class TradeData
+    {
+        [CsvHelper.Configuration.Attributes.Name("Transaction Date")]
+        required public string Date { get; set; }
+
+        [CsvHelper.Configuration.Attributes.Name("Stock Symbol")]
+        required public string Stock { get; set; }
+
+        [CsvHelper.Configuration.Attributes.Name("Action")]
+        required public string Action { get; set; }
     }
 
     public class EnrichedTradeData : TradeData
@@ -51,8 +61,8 @@ namespace TradeViewer
         {
             set
             {
-                _holding_Period = value;
-            }
+                    _holding_Period = value;
+                }
             get
             {
                 return _holding_Period > 0 ? _holding_Period : HOLDING_PERIOD;

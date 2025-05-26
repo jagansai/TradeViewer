@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.ComponentModel;
 
 namespace TradeViewer
 {
@@ -16,6 +17,7 @@ namespace TradeViewer
         public MainWindow()
         {
             InitializeComponent();
+            SetCurrentHoldingPeriodInfo(StockToTradeGroup.HOLDING_PERIOD);
         }
 
         private void LoadCsvButton_Click(object sender, RoutedEventArgs e)
@@ -44,7 +46,7 @@ namespace TradeViewer
 
             var viewModel = (MainViewModel)DataContext;
             int hold_days = 0;
-            hold_days = Int32.TryParse(this.Holding_Period.Text, out hold_days) ? hold_days : StockToTradeGroup.HOLDING_PERIOD;
+            hold_days = GetHoldingPeriod();
             var stocks = this.Search_Stcok.Text.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.ToLower());
             IEnumerable<StockToTradeGroup> records = viewModel.LoadCsvData(_fileName, hold_days);
 
@@ -58,7 +60,7 @@ namespace TradeViewer
                 if (Action.SelectedItem != null && Action.SelectedItem is ComboBoxItem comboBoxItem)
                 {
                     records = FilterByStockAction(records, comboBoxItem.Content.ToString());
-                }                
+                }
             }
             treeviewList.ItemsSource = records.Select(x =>
             {
@@ -76,14 +78,14 @@ namespace TradeViewer
             });
         }
 
-        private IEnumerable<StockToTradeGroup> GetStocks( IEnumerable<StockToTradeGroup> records, IEnumerable<String> stocks )
+        private IEnumerable<StockToTradeGroup> GetStocks(IEnumerable<StockToTradeGroup> records, IEnumerable<String> stocks)
         {
             return records.Where(x => stocks.Any(stock => x.StockName.ToLower().Contains(stock))).DistinctBy(x => x.StockName);
         }
 
-        private IEnumerable<StockToTradeGroup> FilterByStockAction( IEnumerable<StockToTradeGroup> records, String stockAction ) 
-        { 
-            if ( stockAction.Equals(TradeViewerConstants.STOCK_ACTION_RESET)) return records;
+        private IEnumerable<StockToTradeGroup> FilterByStockAction(IEnumerable<StockToTradeGroup> records, String stockAction)
+        {
+            if (stockAction.Equals(TradeViewerConstants.STOCK_ACTION_RESET)) return records;
 
             return records.Where(x => x.CanSellDescr.Equals(stockAction));
         }
@@ -124,6 +126,27 @@ namespace TradeViewer
         private static bool IsTextAllowed(string text)
         {
             return !_regex.IsMatch(text);
+        }
+
+        public int GetHoldingPeriod()
+        {
+            int hold_days = 0;
+            Int32.TryParse(this.Holding_Period.Text, out hold_days);
+            int result = hold_days == 0 ? StockToTradeGroup.HOLDING_PERIOD : hold_days;
+            SetCurrentHoldingPeriodInfo(result);
+            return result;
+        }
+
+        private void SetCurrentHoldingPeriodInfo(int hold_days)
+        {
+            if (hold_days == 0)
+            {
+                CurrentHoldingPeriodInfo.Content = "Default Holding Period: " + StockToTradeGroup.HOLDING_PERIOD;
+            }
+            else
+            {
+                CurrentHoldingPeriodInfo.Content = "Current Holding Period: " + hold_days;
+            }
         }
     }
 }

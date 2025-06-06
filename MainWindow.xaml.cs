@@ -17,7 +17,7 @@ namespace TradeViewer
         public MainWindow()
         {
             InitializeComponent();
-            SetCurrentHoldingPeriodInfo(StockToTradeGroup.HOLDING_PERIOD);
+            SetCurrentHoldingPeriodInfo(StockToTradeGroup.DEFAULT_HOLDING_PERIOD);
         }
 
         private void LoadCsvButton_Click(object sender, RoutedEventArgs e)
@@ -133,7 +133,7 @@ namespace TradeViewer
         {
             int hold_days = 0;
             Int32.TryParse(this.Holding_Period.Text, out hold_days);
-            int result = hold_days == 0 ? StockToTradeGroup.HOLDING_PERIOD : hold_days;
+            int result = hold_days == 0 ? StockToTradeGroup.DEFAULT_HOLDING_PERIOD : hold_days;
             SetCurrentHoldingPeriodInfo(result);
             return result;
         }
@@ -142,7 +142,7 @@ namespace TradeViewer
         {
             if (hold_days == 0)
             {
-                CurrentHoldingPeriodInfo.Content = "Default Holding Period: " + StockToTradeGroup.HOLDING_PERIOD;
+                CurrentHoldingPeriodInfo.Content = "Default Holding Period: " + StockToTradeGroup.DEFAULT_HOLDING_PERIOD;
             }
             else
             {

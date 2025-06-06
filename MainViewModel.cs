@@ -45,7 +45,7 @@ namespace TradeViewer
     {
         private static readonly SolidColorBrush GREEN = new SolidColorBrush(Colors.Green);
         private static readonly SolidColorBrush RED = new SolidColorBrush(Colors.Red);
-        public static readonly int HOLDING_PERIOD = 60;
+        public static readonly int DEFAULT_HOLDING_PERIOD = 60;
         private int _holding_Period = 0;
         private SolidColorBrush _actionColor = RED;
         private int _totalQuantity = 0;
@@ -64,7 +64,7 @@ namespace TradeViewer
                 }
             get
             {
-                return _holding_Period > 0 ? _holding_Period : HOLDING_PERIOD;
+                return _holding_Period > 0 ? _holding_Period : DEFAULT_HOLDING_PERIOD;
             }
         }
 
@@ -211,7 +211,7 @@ namespace TradeViewer
                 }
             }
             int heldForDays = StockToTradeGroup.calculateHeldFor(enrichedTradeDatas);
-            holding_period = holding_period != 0 ? holding_period : StockToTradeGroup.HOLDING_PERIOD;
+            holding_period = holding_period != 0 ? holding_period : StockToTradeGroup.DEFAULT_HOLDING_PERIOD;
             var stockToTradeGroup = new StockToTradeGroup()
             {
                 StockName = stockName,

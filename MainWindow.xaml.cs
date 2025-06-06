@@ -30,13 +30,13 @@ namespace TradeViewer
             }
 
             _fileName = ofd.FileName;
-            loadTrades();
+            LoadTrades();
 
         }
 
         // All the logic for UI is in this method.
 
-        private void loadTrades()
+        private void LoadTrades()
         {
             if (_fileName == String.Empty)
             {
@@ -71,7 +71,8 @@ namespace TradeViewer
                     StockName = x.StockName,
                     HeldFor = x.HeldFor,
                     Trades = x.Trades,
-                    HoldingPeriod = hold_days
+                    HoldingPeriod = hold_days,
+                    TotalQuantity = x.TotalQuantity
                 };
                 temp.CanSell = temp.GetActionColor();
                 return temp;
@@ -94,11 +95,11 @@ namespace TradeViewer
         {
             if (this.Search_Stcok.Text.Length >= 3)
             {
-                loadTrades();
+                LoadTrades();
             }
             else if (this.Search_Stcok.Text.Length == 0)
             {
-                loadTrades();
+                LoadTrades();
             }
         }
 
@@ -106,17 +107,17 @@ namespace TradeViewer
         {
             if (this.Holding_Period.Text.Length >= 2)
             {
-                loadTrades();
+                LoadTrades();
             }
             else if (this.Holding_Period.Text.Length == 0)
             {
-                loadTrades();
+                LoadTrades();
             }
         }
 
         private void Action_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            loadTrades();
+            LoadTrades();
         }
 
         private void Holding_Period_PreviewTextInput(object sender, TextCompositionEventArgs e)

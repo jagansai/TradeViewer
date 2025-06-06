@@ -1,11 +1,12 @@
 ﻿using CsvHelper;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows.Media;
-using System.Collections.ObjectModel;
 
 namespace TradeViewer
 {
@@ -20,12 +21,6 @@ namespace TradeViewer
         
     }
 
-
-    // This class should have fields that should be mapped to csv file with below mappings.
-    // "Transaction Date" => Date
-    // "Stock Symbol" => Stock
-    // Action => Action.
-
     public class TradeData
     {
         [CsvHelper.Configuration.Attributes.Name("Transaction Date")]
@@ -36,6 +31,9 @@ namespace TradeViewer
 
         [CsvHelper.Configuration.Attributes.Name("Action")]
         required public string Action { get; set; }
+
+        [CsvHelper.Configuration.Attributes.Name("Quantity")]
+        required public int Quantity { get; set; } = 0;
     }
 
     public class EnrichedTradeData : TradeData
@@ -50,6 +48,7 @@ namespace TradeViewer
         public static readonly int HOLDING_PERIOD = 60;
         private int _holding_Period = 0;
         private SolidColorBrush _actionColor = RED;
+        private int _totalQuantity = 0;
 
         public string StockName { get; set; }
         public int HeldFor
@@ -99,6 +98,18 @@ namespace TradeViewer
             get; set;
         }
 
+        public int TotalQuantity
+        {
+            get
+            {
+                return _totalQuantity;
+            }
+            set
+            {
+                _totalQuantity = value;
+            }
+        }
+
         public IEnumerable<EnrichedTradeData> Trades { get; set; }
 
         public static int calculateHeldFor( IEnumerable<TradeData> trades )
@@ -118,6 +129,24 @@ namespace TradeViewer
                                                                       : heldForDays >= holding_period ? TradeViewerConstants.CAN_SELL : TradeViewerConstants.CANNOT_SELL;
             }
             return heldForDays >= holding_period ? TradeViewerConstants.CAN_SELL : TradeViewerConstants.CANNOT_SELL;
+        }
+
+        public static int calculateTotalQuantity(IEnumerable<TradeData> trades)
+        {
+            // Calculate total quantity of stocks held based on total buy - sell transactions.
+            int totalQuantity = 0;
+            foreach (var trade in trades)
+            {
+                if (trade.Action.Equals(TradeViewerConstants.Buy))
+                {
+                    totalQuantity += trade.Quantity;
+                }
+                else if (trade.Action.Equals(TradeViewerConstants.Sell))
+                {
+                    totalQuantity -= trade.Quantity;
+                }
+            }
+            return totalQuantity;
         }
     }
 
@@ -168,7 +197,13 @@ namespace TradeViewer
                     var tradeDate = DateTimeOffset.ParseExact(trade.Date, "dd-MMM-yyyy", CultureInfo.InvariantCulture);
                     temp.HeldFor = tempDate.Subtract(tradeDate).Days.ToString();
                 }
-                var enrichedTrade = new EnrichedTradeData { Stock = trade.Stock, Action = trade.Action, Date = trade.Date };
+                var enrichedTrade = new EnrichedTradeData
+                {
+                    Stock = trade.Stock,
+                    Action = trade.Action,
+                    Date = trade.Date,
+                    Quantity = trade.Quantity 
+                };
                 enrichedTradeDatas.Add(enrichedTrade);
                 if (trade.Action.Equals(TradeViewerConstants.Sell))
                 {
@@ -183,7 +218,8 @@ namespace TradeViewer
                 Trades = enrichedTradeDatas,
                 HeldFor = heldForDays,
                 CanSellDescr = StockToTradeGroup.calculateCanSell(enrichedTradeDatas, heldForDays, holding_period),
-                HoldingPeriod = holding_period
+                HoldingPeriod = holding_period,
+                TotalQuantity = StockToTradeGroup.calculateTotalQuantity(enrichedTradeDatas)
             };
             return stockToTradeGroup;
         }

@@ -63,7 +63,8 @@
 									<TextBlock FontSize="14" Text="{Binding StockName}" FontWeight="Bold" Grid.Column="0"/>
 									<TextBlock FontSize="14" Text="{Binding HeldFor}" Foreground="{Binding CanSell}" Grid.Column="1"/>
 									<TextBlock FontSize="14" Text="{Binding CanSellDescr}" FontWeight="Bold" Foreground="{Binding CanSell}" Grid.Column="2"/>
-								</Grid>
+                                    <TextBlock Text="{Binding TotalQuantity}" FontWeight="Bold" Grid.Column="3" HorizontalAlignment="Right"/>
+                                </Grid>
 							</Border>
 						</TreeViewItem.Header>
 
@@ -76,13 +77,15 @@
 											<ColumnDefinition Width="100" MinWidth="50"/>
 											<ColumnDefinition Width="100" MinWidth="50"/>
 											<ColumnDefinition Width="100" MinWidth="50"/>
-											<ColumnDefinition />
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition />
 										</Grid.ColumnDefinitions>
 										<TextBlock Text="{Binding Date}" Grid.Column="0"/>
 										<TextBlock Text="{Binding Stock}" Grid.Column="1"/>
 										<TextBlock Text="{Binding Action}" Grid.Column="2"/>
 										<TextBlock Text="{Binding HeldFor}" Grid.Column="3"/>
-									</Grid>
+                                        <TextBlock Text="{Binding Quantity}" Grid.Column="4"/>
+                                    </Grid>
 								</Border>
 							</DataTemplate>
 						</TreeViewItem.ItemTemplate>
